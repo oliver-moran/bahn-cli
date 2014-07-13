@@ -1,0 +1,23 @@
+{
+  "name": "bahn",
+  "version": "0.0.0",
+  "description": "A command line interface to create bahn applications",
+  "main": "bahn-cli.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oliver-moran/bahn-cli.git"
+  },
+  "keywords": [
+    "bahn",
+    "cli"
+  ],
+  "author": "Oliver Moran <oliver.moran@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oliver-moran/bahn-cli/issues"
+  },
+  "homepage": "https://github.com/oliver-moran/bahn-cli"
+}
