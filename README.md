@@ -5,6 +5,12 @@ Node CLI to install and run a [bahn](https://github.com/oliver-moran/bahn) serve
 
 To install: `npm install bahn -g`
 
-To install and run a server in a (preferably empty) directory:
+To install and run a server in a (preferably empty) directory. Examples:
 
-    `bahn`
+    bahn --create ~/bahn
+    bahn --port 3000 ~/bahn
+    bahn --forever
+
+See:
+
+    bahn --help

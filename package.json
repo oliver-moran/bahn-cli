@@ -1,6 +1,6 @@
 {
   "name": "bahn",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A ready-for-road HTML5 application stack combining Bootstrap, AngularJS, H5BP, and Node.js (BAHN).",
   "main": "bahn-cli.js",
   "repository": {
@@ -11,7 +11,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node bahn-cli.js"
   },
-  "bin": { "bahn" : "./bahn-cli.js" },
+  "bin": {
+    "bahn": "./bahn-cli.js"
+  },
   "keywords": [
     "application",
     "framework",
@@ -45,7 +47,9 @@
     "request": "~2.37.0",
     "node-uuid": "~1.4.1",
     "unzip": "~0.1.9",
-    "npm": "~1.4.21"
+    "npm": "~1.4.21",
+    "yargs": "~1.2.6",
+    "forever-monitor": "~1.2.3"
   },
   "preferGlobal": true
 }
