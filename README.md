@@ -1,16 +1,52 @@
 bahn-cli
 ========
 
-Node CLI to install and run a [bahn](https://github.com/oliver-moran/bahn) server.
+bahn is a ready-for-road HTML5 application stack combining [Bootstrap](http://getbootstrap.com), [AngularJS](https://angularjs.org/), [H5BP](http://html5boilerplate.com/), and [Node.js](http://nodejs.org/) (BAHN).
 
-To install: `npm install bahn -g`
+bahn comes pre-rolled a NoSQL database ([NeDB](https://github.com/louischatriot/nedb) or [MongoDB](http://www.mongodb.org/)), a HTTP application server ([Express](http://expressjs.com/)), and [WebSocket](http://www.html5rocks.com/en/tutorials/websockets/basics/) support for dynamic applications ([Socket.io](http://socket.io/)).
 
-To install and run a server in a (preferably empty) directory. Examples:
+Apart from bundling all of these together, the philosophy is otherwise agnostic. Use one, use all, use some. But have fun!
 
-    bahn --create ~/bahn
-    bahn --port 3000 ~/bahn
-    bahn --forever
+## Installation ##
 
-See:
+To install the bahn command-line interface type:
+
+    npm install bahn -g
+
+You must have [Node.js installed](http://nodejs.org/download/) before installing. To use a MongoDB database, you must have [MongoDB installed](http://www.mongodb.org/downloads) or access to a MongoDB server.
+
+A seed TODO application that puts the stack through through its paces is included. After installing the bahn command-line interface, navigate to an empty directory and type:
+
+    bahn
+
+This will download and install the latest release of bahn. When it's done, visit [http://127.0.0.1:8080/](http://127.0.0.1:8080/) in a web browser and have a look in the `application/` directory, which is intended will modify to create your own application.
+
+## Using the line interface ##
+
+To install and run a bahn application application server, navigate to a (preferably) empty directory and type:
+
+    bahn
+    
+By default the application server will run on port 8080. To run it on a port 80, try:
+
+    bahn --port 80
+
+To run the application server on port 80 and set it to auto-restart after a crash, try:
+
+    bahn --port 80 --forever
+
+To do all of the above and use a MongoDB database (as opposed to the default NeDB database), try:
+
+    bahn --port 80 --database "mongodb://admin:password@127.0.0.1:27017/bahn" --forever
+
+To install/run a bahn application server in a different directory, on port 80, with auto-restart, try:
+
+    bahn --port 80 --forever ~/path/to/directory/
+
+For a full list of options, see:
 
     bahn --help
+
+## License ##
+
+All of the software distributed in this stack is released under the [MIT license](http://opensource.org/licenses/MIT). Node.js ([see license](https://raw.githubusercontent.com/joyent/node/v0.10.29/LICENSE)) and MongoDB ([see license](http://www.mongodb.org/about/licensing/)) are distributed separately under different open source licenses.

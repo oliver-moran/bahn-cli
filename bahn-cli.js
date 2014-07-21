@@ -8,6 +8,7 @@ var UUID = require("node-uuid");
 var Unzip = require("unzip");
 var NPM = require("npm");
 var Forever = require("forever-monitor");
+var PackageJSONValidator = require('package-json-validator').PJV;
 
 Array.prototype.diff = function(a) {
     return this.filter(function(i) {return !(a.indexOf(i) > -1);});
@@ -23,28 +24,39 @@ var USER_AGENT = "bahn-cli " + package.version + "; " +
 
 // process the command line arguments
 var argv = require("yargs")
-    .usage("Creates and manages a bahn application: $0")
-    .example("bahn --create ~/bahn", "install an application in ~/bahn")
-    .example("bahn --start ~/bahn", "start the application in ~/bahn")
-    .example("bahn --port 8080 --forever", "start on port 8080 and auto-restart if it dies")
-    .describe("create", "downloads and installs the latest bahn release")
-    .describe("database", "sets whether to start a databse with the application")
-    .describe("help", "show this help text")
-    .describe("port", "sets the port the application run at")
-    .describe("start", "starts a bahn application")
-    .describe("sockets", "sets whether to start WebSockets with the application")
-    .describe("version", "print the current version number of this CLI application")
+    .usage("Installs and manages bahn applications")
+    .example("bahn", "install/start a bahn application")
+    .example("bahn --port 80", "install/start an application using port 80")
+    .example("bahn --port 80 --forever", "install/start on port 80 and keep alive")
+    .example("bahn ~/path/to/directory", "install/start in the given directory")
+    .describe("create", "explicitly downloads and installs the latest bahn release")
+    .describe("database", "a Boolean or the URL of a MongoDB server")
+    .describe("logging", "a Boolean or the path to write HTTP logs")
+    .describe("port", "the HTTP port at which to application listens")
+    .describe("start", "explicitly starts a bahn application")
+    .describe("sockets", "a Boolean, if false WebSockets will be disabled")
+    .describe("version", "print the version number of this CLI")
     .wrap(80)
     .boolean("help")
     .boolean("version")
     .boolean("create")
     .boolean("start")
     .boolean("forever")
-    .requiresArg(["port", "database", "sockets"])
+    .requiresArg(["port", "database", "sockets", "logging"])
     .check(function (argv, arr) {
         // must either install or create
-        if (!argv.create && !argv.version && !argv.help) {
-            argv.start = true;
+        if (!argv.create && !argv.start && !argv.version && !argv.help) {
+            var dir = (argv._[0]) ? Path.resolve(argv._[0]) : process.cwd();
+            try {
+                var package = require(Path.join(dir, "package.json"));
+                argv.start = true;
+                return;
+            } catch (err) {
+                // meh, probably does not exist
+                argv.create = true;
+                argv.start = true;
+                return;
+            }
         }
     })
     .argv;
@@ -95,7 +107,7 @@ function downloadAndInstall(release) {
                     NPM.on("log", function (message) { console.log(message); })
                     NPM.commands.install([dir], function (er, data) {
                         process.chdir(cwd); // change back to original cwd for pity's sake
-                        if (arv.start) start();
+                        if (argv.start) start();
                     });
                 });
             });
@@ -105,6 +117,25 @@ function downloadAndInstall(release) {
 function start() {
     var dir = (argv._[0]) ? Path.resolve(argv._[0]) : process.cwd();
 
+    /* Error checking */
+    try {
+        var path = Path.join(dir, "package.json");
+        var contents = FS.readFileSync(path).toString();
+        var check = PackageJSONValidator.validate(contents);
+        if (!check.valid) {
+            console.log("Could not start bahn. Could not parse package.json: " + check.critical);
+            return;
+        }
+        var package = JSON.parse(contents);
+        if (package.name != "bahn") {
+            console.log("Could not start bahn. Found the package " + package.name + ".");
+            return;
+        }
+    } catch (err) {
+        console.log("Could not start bahn. Could not parse package.json.");
+        return;
+    }
+    
     var args = [];
     if (typeof argv.port != "undefined") 
         args.push("--port", argv.port);
@@ -112,6 +143,8 @@ function start() {
         args.push("--database", argv.database);
     if (typeof argv.sockets != "undefined") 
         args.push("--sockets", argv.sockets);
+    if (typeof argv.logging != "undefined") 
+        args.push("--logging", argv.logging);
 
     var n = (argv.forever) ? Infinity : 1;
     
