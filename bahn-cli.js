@@ -15,12 +15,16 @@ Array.prototype.diff = function(a) {
 };
 
 var package = require("./package.json");
+if (!package.config) package.config = {};
 
 var REPO = "oliver-moran/bahn";
 var USER_AGENT = "bahn-cli " + package.version + "; " +
                  "node " + process.version + "; " +
                  "v8 " + process.versions.v8 + "; " +
                  "https://github.com/bahn-cli";
+
+var HTTP_PROXY;
+if (package.config.proxy) HTTP_PROXY = package.config.proxy;
 
 // process the command line arguments
 var argv = require("yargs")
@@ -33,6 +37,7 @@ var argv = require("yargs")
     .describe("database", "a Boolean or the URL of a MongoDB server")
     .describe("logging", "a Boolean or the path to write HTTP logs")
     .describe("port", "the HTTP port at which to application listens")
+    .describe("proxy", "the URL of a proxy server, if you are behind a proxy")
     .describe("start", "explicitly starts a bahn application")
     .describe("sockets", "a Boolean, if false WebSockets will be disabled")
     .describe("version", "print the version number of this CLI")
@@ -42,7 +47,7 @@ var argv = require("yargs")
     .boolean("create")
     .boolean("start")
     .boolean("forever")
-    .requiresArg(["port", "database", "sockets", "logging"])
+    .requiresArg(["port", "database", "sockets", "logging", "proxy"])
     .check(function (argv, arr) {
         // must either install or create
         if (!argv.create && !argv.start && !argv.version && !argv.help) {
@@ -61,6 +66,7 @@ var argv = require("yargs")
     })
     .argv;
 
+if (argv.proxy) HTTP_PROXY = argv.proxy;
 if (argv.help) console.log(require("yargs").help());
 if (argv.version) console.log("bahn-cli " + package.version);
 if (argv.create) downloadReleaseURL();
@@ -164,10 +170,12 @@ function start() {
 }
 
 function requestObject(url) {
-    return {
+    var obj = {
         url: url,
         headers: { "User-Agent": USER_AGENT }
     };
+    if (HTTP_PROXY) obj.proxy = HTTP_PROXY;
+    return obj;
 }
 
 function getDirectories(dir) {
