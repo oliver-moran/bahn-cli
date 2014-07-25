@@ -154,7 +154,7 @@ function start() {
 
     var n = (argv.forever) ? Infinity : 1;
     
-    var child = new (Forever.Monitor)("bahn.js", {
+    var child = new (Forever.Monitor)("server.js", {
         max: n,
         sourceDir: dir,
         cwd: dir,

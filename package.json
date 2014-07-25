@@ -1,6 +1,6 @@
 {
   "name": "bahn",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A ready-for-road HTML5 application stack combining Bootstrap, AngularJS, H5BP, and Node.js (BAHN).",
   "main": "bahn-cli.js",
   "repository": {
