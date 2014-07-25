@@ -2,6 +2,8 @@
 
 var FS = require("fs");
 var Path = require("path");
+var OS = require("os");
+var ChildProcess = require("child_process");
 
 var Request = require("request");
 var UUID = require("node-uuid");
@@ -35,7 +37,7 @@ var argv = require("yargs")
     .example("bahn ~/path/to/directory", "install/start in the given directory")
     .describe("create", "explicitly downloads and installs the latest bahn release")
     .describe("database", "a Boolean or the URL of a MongoDB server")
-    .describe("logging", "a Boolean or the path to write HTTP logs")
+    .describe("forever", "restart application if it crashes (Unix only)")
     .describe("port", "the HTTP port at which to application listens")
     .describe("proxy", "the URL of a proxy server, if you are behind a proxy")
     .describe("start", "explicitly starts a bahn application")
@@ -47,7 +49,7 @@ var argv = require("yargs")
     .boolean("create")
     .boolean("start")
     .boolean("forever")
-    .requiresArg(["port", "database", "sockets", "logging", "proxy"])
+    .requiresArg(["port", "database", "sockets", "proxy"])
     .check(function (argv, arr) {
         // must either install or create
         if (!argv.create && !argv.start && !argv.version && !argv.help) {
@@ -149,24 +151,32 @@ function start() {
         args.push("--database", argv.database);
     if (typeof argv.sockets != "undefined") 
         args.push("--sockets", argv.sockets);
-    if (typeof argv.logging != "undefined") 
-        args.push("--logging", argv.logging);
 
     var n = (argv.forever) ? Infinity : 1;
     
-    var child = new (Forever.Monitor)("server.js", {
-        max: n,
-        sourceDir: dir,
-        cwd: dir,
-        silent: false,
-        options: args
-    });
+	if (OS.platform().toLowerCase() == "win32") {
+		var child = ChildProcess.spawn("node", ["server.js"].concat(args));
+		child.stdout.on("data", function (data) {
+			process.stdout.write(data);
+		});
+		child.stderr.on("data", function (data) {
+			process.stderr.write(data);
+		});
+	} else {
+		var child = new (Forever.Monitor)("node server.js", {
+			max: n,
+			sourceDir: dir,
+			cwd: dir,
+			silent: false,
+			options: args
+		});
 
-    child.on("restart", function() {
-        console.error("Restarting bahn: " + child.times + " (" + dir + ")");
-    });
+		child.on("restart", function() {
+			console.error("Restarting bahn: " + child.times + " (" + dir + ")");
+		});
 
-    child.start();
+		child.start();
+	}
 }
 
 function requestObject(url) {
