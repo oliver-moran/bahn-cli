@@ -163,7 +163,7 @@ function start() {
 			process.stderr.write(data);
 		});
 	} else {
-		var child = new (Forever.Monitor)("node server.js", {
+		var child = new (Forever.Monitor)("server.js", {
 			max: n,
 			sourceDir: dir,
 			cwd: dir,
